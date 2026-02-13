@@ -1,0 +1,16 @@
+/.mvn
+/target
+/.idea
+.classpath
+.project
+.settings
+*.iml
+.gradle
+.DS_Store
+/log
+/logs
+/.env
+/.idea
+/.vscode
+/.cursor
+
