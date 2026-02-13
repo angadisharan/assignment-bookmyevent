@@ -52,7 +52,15 @@ Next steps
  
 Swagger / OpenAPI
 - The project includes springdoc OpenAPI integration. After the app starts you can view the interactive Swagger UI at:
-  - http://localhost:8080/swagger-ui.html
-  - or http://localhost:8080/swagger-ui/index.html
+  - Event service: http://localhost:8081/swagger-ui/index.html
+  - Booking service: http://localhost:8082/swagger-ui/index.html
+  - Seatlock service: http://localhost:8083/swagger-ui/index.html
+  - User service: http://localhost:8084/swagger-ui/index.html
+
+Service ports
+- event-service -> http://localhost:8081
+- booking-service -> http://localhost:8082
+- seatlock-service -> http://localhost:8083
+- user-service -> http://localhost:8084
 
 If Swagger UI doesn't appear, ensure the `org.springdoc` dependency is present in `build.gradle.kts` and the application has started successfully.

@@ -154,7 +154,7 @@ CREATE TABLE bookings (
   user_id BIGINT NOT NULL,
   organizer_id BIGINT,
   event_id BIGINT NOT NULL,
-  total_amount_cents INT NOT NULL,
+  total_amount_paisa BIGINT NOT NULL,
   currency CHAR(3) DEFAULT 'INR',
   status ENUM('PENDING','CONFIRMED','CANCELLED','FAILED') DEFAULT 'PENDING',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
