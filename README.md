@@ -1,6 +1,6 @@
-# BookMyEvent (modular monolith) — Assignment
+# BookMyEvent (microservices) — Assignment
 
-This repository is an assignment scaffold implementing a modular-monolith for an Event Ticketing platform (BookMyEvent). The code is organized into clear bounded-context modules:
+This repository is an assignment scaffold implementing a microservices architecture for an Event Ticketing platform (BookMyEvent). The code is organized into separate services:
 - `eventcatalog`, `booking`, `seatlock`, `user`, `config`.
 
 Modules are structured so they can be extracted later and run as independent microservices if needed — controllers, services, repositories and domain models are separated per module to support that evolution.
@@ -11,6 +11,7 @@ Prereqs
 - JDK 21 (or install Temurin 21)
 - Gradle (wrapper included) — use `./gradlew` from project root
 - MySQL 8.x
+- Redis (local dev, default port 6379)
 
 Install a JDK 21 (macOS, Homebrew example)
 ```bash
@@ -64,3 +65,23 @@ Service ports
 - user-service -> http://localhost:8084
 
 If Swagger UI doesn't appear, ensure the `org.springdoc` dependency is present in `build.gradle.kts` and the application has started successfully.
+
+Redis (local development)
+- Install & start (Homebrew):
+  ```bash
+  brew install redis
+  brew services start redis
+  ```
+- Quick check:
+  ```bash
+  redis-cli ping
+  # should output: PONG
+  ```
+- Alternative (Docker):
+  ```bash
+  docker run -d --name redis -p 6379:6379 redis:7
+  redis-cli -h 127.0.0.1 -p 6379 ping
+  ```
+- Notes:
+  - Services expect Redis on port 6379 by default.
+  - Seat locks use Redis keys like `lock:event:{eventId}:seat:{seatId}` with a TTL (10 minutes).
