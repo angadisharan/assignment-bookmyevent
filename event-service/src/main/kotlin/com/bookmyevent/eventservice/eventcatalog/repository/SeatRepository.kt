@@ -7,5 +7,6 @@ import org.springframework.stereotype.Repository
 @Repository
 interface SeatRepository : JpaRepository<SeatEntity, Long> {
     fun findByEventId(eventId: Long): List<SeatEntity>
+    fun findByEventIdAndStatus(eventId: Long, status: String): List<SeatEntity>
 }
 
