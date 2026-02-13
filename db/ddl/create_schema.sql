@@ -5,6 +5,11 @@ DROP DATABASE IF EXISTS `bookmyevent`;
 CREATE DATABASE `bookmyevent` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE USER IF NOT EXISTS 'dev'@'%' IDENTIFIED BY 'dev123';
 GRANT ALL PRIVILEGES ON `bookmyevent`.* TO 'dev'@'%';
+-- Also create local variants so connections via socket/localhost work
+CREATE USER IF NOT EXISTS 'dev'@'localhost' IDENTIFIED BY 'dev123';
+GRANT ALL PRIVILEGES ON `bookmyevent`.* TO 'dev'@'localhost';
+CREATE USER IF NOT EXISTS 'dev'@'127.0.0.1' IDENTIFIED BY 'dev123';
+GRANT ALL PRIVILEGES ON `bookmyevent`.* TO 'dev'@'127.0.0.1';
 FLUSH PRIVILEGES;
 
 USE `bookmyevent`;

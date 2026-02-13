@@ -35,6 +35,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    // OpenAPI / Swagger UI (springdoc)
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0")
 
     // Jakarta Persistence API (annotations like @Entity, @Table) - optional, provided by spring-boot-starter-data-jpa
     implementation("jakarta.persistence:jakarta.persistence-api:3.1.0")

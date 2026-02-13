@@ -1,4 +1,9 @@
-# BookMyEvent (modular monolith)
+# BookMyEvent (modular monolith) — Assignment
+
+This repository is an assignment scaffold implementing a modular-monolith for an Event Ticketing platform (BookMyEvent). The code is organized into clear bounded-context modules:
+- `eventcatalog`, `booking`, `seatlock`, `user`, `config`.
+
+Modules are structured so they can be extracted later and run as independent microservices if needed — controllers, services, repositories and domain models are separated per module to support that evolution.
 
 Kotlin + Spring Boot sample application scaffold for the BookMyEvent project.
 
@@ -44,3 +49,10 @@ Notes and safety
 Next steps
 - Implement services, repositories and REST APIs (skeleton modules are present under `src/main/kotlin/com/bookmyevent/`).
 - Consider adding Flyway/Liquibase if you want proper non-destructive migrations.
+ 
+Swagger / OpenAPI
+- The project includes springdoc OpenAPI integration. After the app starts you can view the interactive Swagger UI at:
+  - http://localhost:8080/swagger-ui.html
+  - or http://localhost:8080/swagger-ui/index.html
+
+If Swagger UI doesn't appear, ensure the `org.springdoc` dependency is present in `build.gradle.kts` and the application has started successfully.
