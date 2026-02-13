@@ -21,6 +21,15 @@ data class EventEntity(
     @Column
     val category: String? = null,
 
+    @Column(name = "organizer_id", nullable = false)
+    val organizerId: Long = 0,
+
+    @Column(name = "venue_id", nullable = false)
+    val venueId: Long = 0,
+
+    @Column(nullable = false)
+    val status: String = "DRAFT",
+
     @Column(name = "start_time", nullable = false)
     val startTime: LocalDateTime = LocalDateTime.now(),
 
