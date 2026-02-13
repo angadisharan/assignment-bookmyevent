@@ -9,26 +9,29 @@ import jakarta.persistence.Table
 import java.time.LocalDateTime
 
 @Entity
-@Table(name = "bookings")
-data class BookingEntity(
+@Table(name = "seat_holds")
+data class SeatHoldEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
 
-    @Column(name = "booking_ref", nullable = false, unique = true)
-    val bookingRef: String = "",
+    @Column(name = "hold_token", nullable = false)
+    val holdToken: String = "",
 
-    @Column(name = "user_id")
-    val userId: Long? = null,
+    @Column(name = "user_id", nullable = false)
+    val userId: Long = 0,
 
     @Column(name = "event_id", nullable = false)
     val eventId: Long = 0,
 
-    @Column(name = "total_amount_paisa", nullable = false)
-    val totalAmountPaisa: Long = 0L,
+    @Column(name = "seat_id", nullable = false)
+    val seatId: Long = 0,
 
-    @Column(nullable = false)
-    val status: String = "PENDING",
+    @Column(name = "status")
+    val status: String = "HOLD",
+
+    @Column(name = "expires_at", nullable = false)
+    val expiresAt: LocalDateTime,
 
     @Column(name = "created_at")
     val createdAt: LocalDateTime = LocalDateTime.now()

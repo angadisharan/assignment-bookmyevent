@@ -5,7 +5,6 @@ DROP DATABASE IF EXISTS `bookmyevent`;
 CREATE DATABASE `bookmyevent` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE USER IF NOT EXISTS 'dev'@'%' IDENTIFIED BY 'dev123';
 GRANT ALL PRIVILEGES ON `bookmyevent`.* TO 'dev'@'%';
--- Also create local variants so connections via socket/localhost work
 CREATE USER IF NOT EXISTS 'dev'@'localhost' IDENTIFIED BY 'dev123';
 GRANT ALL PRIVILEGES ON `bookmyevent`.* TO 'dev'@'localhost';
 CREATE USER IF NOT EXISTS 'dev'@'127.0.0.1' IDENTIFIED BY 'dev123';
@@ -21,7 +20,7 @@ CREATE TABLE users (
   email VARCHAR(255) UNIQUE NOT NULL,
   password_hash VARCHAR(255) NOT NULL,
   full_name VARCHAR(255),
-  status ENUM('ACTIVE','SUSPENDED','DELETED') DEFAULT 'ACTIVE',
+  status VARCHAR(50) DEFAULT 'ACTIVE',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -63,13 +62,14 @@ CREATE TABLE events (
   organizer_id BIGINT NOT NULL,
   venue_id BIGINT NOT NULL,
   title VARCHAR(255) NOT NULL,
-  category VARCHAR(100),
+  category_id BIGINT,
   start_time DATETIME NOT NULL,
   end_time DATETIME,
-  status ENUM('DRAFT','PUBLISHED','CANCELLED') DEFAULT 'DRAFT',
+  status VARCHAR(50) DEFAULT 'DRAFT',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_events_organizer FOREIGN KEY (organizer_id) REFERENCES organizers(id) ON DELETE CASCADE,
-  CONSTRAINT fk_events_venue FOREIGN KEY (venue_id) REFERENCES venues(id) ON DELETE RESTRICT
+  CONSTRAINT fk_events_venue FOREIGN KEY (venue_id) REFERENCES venues(id) ON DELETE RESTRICT,
+  CONSTRAINT fk_events_category FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE INDEX idx_events_start ON events (start_time);
@@ -81,6 +81,7 @@ CREATE TABLE event_sections (
   name VARCHAR(100) NOT NULL,
   capacity INT NOT NULL,
   notes TEXT,
+  layout_json JSON,
   CONSTRAINT fk_eventsections_event FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -91,8 +92,10 @@ CREATE TABLE seats (
   seat_row VARCHAR(10),
   seat_number VARCHAR(10),
   seat_code VARCHAR(64) NOT NULL,
-  status ENUM('AVAILABLE','BLOCKED','BOOKED') DEFAULT 'AVAILABLE',
+  status VARCHAR(50) DEFAULT 'AVAILABLE',
+  price_paisa BIGINT DEFAULT NULL,
   version BIGINT DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   UNIQUE KEY ux_event_seatcode (event_id, seat_code),
   CONSTRAINT fk_seats_event FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE,
   CONSTRAINT fk_seats_section FOREIGN KEY (section_id) REFERENCES event_sections(id) ON DELETE SET NULL
@@ -107,7 +110,7 @@ CREATE TABLE pricing_tiers (
   name VARCHAR(100),
   currency CHAR(3) DEFAULT 'INR',
   price_cents INT NOT NULL,
-  price_type ENUM('REGULAR','CONCESSION','PROMO') DEFAULT 'REGULAR',
+  price_type VARCHAR(50) DEFAULT 'REGULAR',
   CONSTRAINT fk_pricing_event FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE,
   CONSTRAINT fk_pricing_section FOREIGN KEY (section_id) REFERENCES event_sections(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -118,7 +121,7 @@ CREATE TABLE offers (
   code VARCHAR(64) UNIQUE,
   event_id BIGINT,
   description TEXT,
-  discount_type ENUM('PERCENT','FLAT') NOT NULL,
+  discount_type VARCHAR(50) NOT NULL,
   discount_value DECIMAL(10,2) NOT NULL,
   valid_from DATETIME,
   valid_until DATETIME,
@@ -130,6 +133,15 @@ CREATE TABLE offers (
 
 CREATE INDEX idx_offers_code ON offers (code);
 
+-- CATEGORIES (event categories)
+CREATE TABLE categories (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  code VARCHAR(100) NOT NULL UNIQUE,
+  name VARCHAR(255) NOT NULL,
+  description TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- HOLDS, BOOKINGS, PAYMENTS
 CREATE TABLE seat_holds (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -137,7 +149,7 @@ CREATE TABLE seat_holds (
   user_id BIGINT NOT NULL,
   event_id BIGINT NOT NULL,
   seat_id BIGINT NOT NULL,
-  status ENUM('HOLD','RELEASED','CONSUMED') DEFAULT 'HOLD',
+  status VARCHAR(50) DEFAULT 'HOLD',
   expires_at DATETIME NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_seatholds_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
@@ -151,12 +163,12 @@ CREATE INDEX idx_seatholds_expires ON seat_holds (expires_at);
 CREATE TABLE bookings (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   booking_ref VARCHAR(64) UNIQUE NOT NULL,
-  user_id BIGINT NOT NULL,
+  user_id BIGINT,
   organizer_id BIGINT,
   event_id BIGINT NOT NULL,
   total_amount_paisa BIGINT NOT NULL,
   currency CHAR(3) DEFAULT 'INR',
-  status ENUM('PENDING','CONFIRMED','CANCELLED','FAILED') DEFAULT 'PENDING',
+  status VARCHAR(50) DEFAULT 'PENDING',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   CONSTRAINT fk_bookings_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
@@ -171,7 +183,7 @@ CREATE TABLE booking_items (
   booking_id BIGINT NOT NULL,
   seat_id BIGINT NOT NULL,
   price_cents INT NOT NULL,
-  status ENUM('RESERVED','CANCELLED','REFUNDED') DEFAULT 'RESERVED',
+  status VARCHAR(50) DEFAULT 'RESERVED',
   CONSTRAINT fk_bookingitems_booking FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE CASCADE,
   CONSTRAINT fk_bookingitems_seat FOREIGN KEY (seat_id) REFERENCES seats(id) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -182,7 +194,7 @@ CREATE TABLE payments (
   provider VARCHAR(100),
   provider_txn_id VARCHAR(255),
   amount_cents INT NOT NULL,
-  status ENUM('INITIATED','SUCCESS','FAILED') DEFAULT 'INITIATED',
+  status VARCHAR(50) DEFAULT 'INITIATED',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_payments_booking FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -197,3 +209,30 @@ INSERT INTO users (username, email, password_hash, full_name) VALUES ('dev', 'de
 INSERT INTO user_roles (user_id, role_id) VALUES (LAST_INSERT_ID(), 1);
 
 -- Done
+--
+-- Sample data: additional users, organizer profile, venues and events
+--
+INSERT INTO users (id, username, email, password_hash, full_name) VALUES
+  (10, 'alice', 'alice@example.com', 'alicepw', 'Alice Smith'),
+  (11, 'bob', 'bob@example.com', 'bobpw', 'Bob Jones'),
+  (12, 'organizer1', 'org1@example.com', 'orgpw', 'Organizer One');
+
+INSERT INTO user_roles (user_id, role_id) VALUES
+  (10, 1),
+  (11, 1),
+  (12, 2);
+
+-- Organizer profile for user 12
+INSERT INTO organizers (id, org_name, contact_email) VALUES
+  (12, 'Mass Events', 'mass@gmail.com');
+
+-- Sample venues
+INSERT INTO venues (id, name, city, address, capacity) VALUES
+  (100, 'Big Arena', 'Mumbai', '123 Main St', 5000),
+  (101, 'Town Hall', 'Delhi', '45 Center Rd', 800);
+
+-- Sample events (category_id refers to categories inserted above: 1=music,2=theatre,...)
+INSERT INTO events (organizer_id, venue_id, title, category_id, start_time, end_time, status) VALUES
+  (12, 100, 'Mass Concert', 1, '2026-03-01 19:00:00', '2026-03-01 22:00:00', 'PUBLISHED'),
+  (12, 101, 'Town Play', 2, '2026-04-05 18:00:00', '2026-04-05 20:30:00', 'PUBLISHED');
+

@@ -4,5 +4,6 @@ import com.bookmyevent.bookingservice.booking.dto.BookingRequest
 
 interface BookingService {
     fun createBooking(req: BookingRequest): String
+    fun confirmBooking(bookingRef: String, holdToken: String): String
 }
 

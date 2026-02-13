@@ -1,20 +1,23 @@
-package com.bookmyevent.eventservice.organizer.service.impl
+package com.bookmyevent.userservice.organizer.service.impl
 
-import com.bookmyevent.eventservice.organizer.dto.CreateOrganizerRequest
-import com.bookmyevent.eventservice.organizer.dto.OrganizerDto
-import com.bookmyevent.eventservice.organizer.entity.OrganizerEntity
-import com.bookmyevent.eventservice.organizer.repository.OrganizerRepository
-import com.bookmyevent.eventservice.organizer.service.OrganizerService
+import com.bookmyevent.userservice.organizer.dto.CreateOrganizerRequest
+import com.bookmyevent.userservice.organizer.dto.OrganizerDto
+import com.bookmyevent.userservice.organizer.entity.OrganizerEntity
+import com.bookmyevent.userservice.organizer.repository.OrganizerRepository
+import com.bookmyevent.userservice.organizer.service.OrganizerService
+import com.bookmyevent.user.repository.UserRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 
 @Service
-class OrganizerServiceImpl(private val repo: OrganizerRepository) : OrganizerService {
+class OrganizerServiceImpl(private val repo: OrganizerRepository, private val userRepo: UserRepository) : OrganizerService {
 
     @Transactional
     override fun createOrganizer(req: CreateOrganizerRequest): OrganizerDto {
-        val entity = OrganizerEntity(id = req.id, orgName = req.orgName, contactEmail = req.contactEmail, createdAt = LocalDateTime.now())
+        val exists = userRepo.existsById(req.userId)
+        if (!exists) throw IllegalArgumentException("User with id ${req.userId} not present")
+        val entity = OrganizerEntity(id = req.userId, orgName = req.orgName, contactEmail = req.contactEmail, createdAt = LocalDateTime.now())
         repo.save(entity)
         return OrganizerDto(id = entity.id, orgName = entity.orgName, contactEmail = entity.contactEmail, createdAt = entity.createdAt)
     }

@@ -18,8 +18,8 @@ data class EventEntity(
     @Column(nullable = false)
     val title: String = "",
 
-    @Column
-    val category: String? = null,
+    @Column(name = "category_id")
+    val categoryId: Long? = null,
 
     @Column(name = "organizer_id", nullable = false)
     val organizerId: Long = 0,

@@ -1,4 +1,4 @@
-package com.bookmyevent.eventservice.organizer.entity
+package com.bookmyevent.userservice.organizer.entity
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity

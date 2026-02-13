@@ -1,4 +1,4 @@
-package com.bookmyevent.eventservice.organizer.dto
+package com.bookmyevent.userservice.organizer.dto
 
 import java.time.LocalDateTime
 

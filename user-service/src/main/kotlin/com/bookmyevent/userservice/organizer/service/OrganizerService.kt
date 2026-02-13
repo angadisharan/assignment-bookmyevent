@@ -1,7 +1,7 @@
-package com.bookmyevent.eventservice.organizer.service
+package com.bookmyevent.userservice.organizer.service
 
-import com.bookmyevent.eventservice.organizer.dto.CreateOrganizerRequest
-import com.bookmyevent.eventservice.organizer.dto.OrganizerDto
+import com.bookmyevent.userservice.organizer.dto.CreateOrganizerRequest
+import com.bookmyevent.userservice.organizer.dto.OrganizerDto
 
 interface OrganizerService {
     fun createOrganizer(req: CreateOrganizerRequest): OrganizerDto
