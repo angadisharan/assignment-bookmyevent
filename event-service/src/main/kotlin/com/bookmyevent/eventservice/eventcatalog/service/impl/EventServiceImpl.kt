@@ -8,12 +8,13 @@ import java.util.NoSuchElementException
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
-
 import com.bookmyevent.eventservice.venue.repository.VenueRepository
 import com.bookmyevent.eventservice.eventcatalog.repository.SeatRepository
 import com.bookmyevent.eventservice.eventcatalog.repository.EventSectionRepository
 import com.bookmyevent.eventservice.eventcatalog.dto.SeatDto
 import com.bookmyevent.eventservice.eventcatalog.dto.SectionDto
+import com.bookmyevent.eventservice.eventcatalog.dto.CreateEventRequest
+import com.bookmyevent.eventservice.eventcatalog.entity.EventEntity
 
 @Service
 class EventServiceImpl(
@@ -33,6 +34,28 @@ class EventServiceImpl(
             startTime = e.startTime,
             endTime = e.endTime
         )
+    }
+
+    override fun createEvent(req: CreateEventRequest): EventDto {
+        val entity = EventEntity(
+            organizerId = req.organizerId,
+            venueId = req.venueId,
+            title = req.title,
+            categoryId = req.categoryId,
+            startTime = req.startTime,
+            endTime = req.endTime
+        )
+        val saved = eventRepository.save(entity)
+        val venueCity = venueRepository.findById(saved.venueId).map { it.city }.orElse(null)
+        return EventDto(id = saved.id, title = saved.title, categoryId = saved.categoryId, venueCity = venueCity, startTime = saved.startTime, endTime = saved.endTime)
+    }
+
+    override fun updateEvent(id: Long, req: EventDto): EventDto {
+        val ev = eventRepository.findById(id).orElseThrow { NoSuchElementException("Event $id not found") }
+        val updated = ev.copy(title = req.title, categoryId = req.categoryId, startTime = req.startTime, endTime = req.endTime)
+        val saved = eventRepository.save(updated)
+        val venueCity = venueRepository.findById(saved.venueId).map { it.city }.orElse(null)
+        return EventDto(id = saved.id, title = saved.title, categoryId = saved.categoryId, venueCity = venueCity, startTime = saved.startTime, endTime = saved.endTime)
     }
 
     override fun searchEvents(city: String?, categoryId: Long?, dateFrom: LocalDate?, dateTo: LocalDate?): List<EventDto> {
@@ -60,6 +83,11 @@ class EventServiceImpl(
         val secDtos = sections.map { s -> SectionDto(id = s.id, name = s.name, capacity = s.capacity, notes = s.notes, layoutJson = s.layoutJson) }
         val seatDtos = seats.map { s -> SeatDto(id = s.id, seatCode = s.seatCode, row = s.seatRow, number = s.seatNumber, status = s.status, pricePaisa = s.pricePaisa) }
         return Pair(secDtos, seatDtos)
+    }
+
+    override fun getBookedSeats(eventId: Long): List<String> {
+        val booked = seatRepo.findByEventIdAndStatus(eventId, "BOOKED")
+        return booked.map { it.seatCode }
     }
 }
 

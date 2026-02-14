@@ -13,7 +13,7 @@ class OpenApiConfig {
         return OpenAPI()
             .info(
                 Info()
-                    .title("BookMyEvent Booking API")
+                    .title("Booking - Service API")
                     .version("v1")
                     .description("Booking service APIs for the BookMyEvent assignment")
             )

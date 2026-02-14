@@ -13,7 +13,7 @@ class OpenApiConfig {
         return OpenAPI()
             .info(
                 Info()
-                    .title("BookMyEvent SeatLock API")
+                    .title("SeatLock - Service API")
                     .version("v1")
                     .description("Seat lock service APIs for the BookMyEvent assignment")
             )

@@ -4,12 +4,16 @@ import com.bookmyevent.user.dto.CreateUserRequest
 import com.bookmyevent.user.dto.UpdateUserRequest
 import com.bookmyevent.user.dto.UserDto
 import com.bookmyevent.user.service.UserService
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/users")
-class UserController(private val userService: UserService) {
+class UserController {
+
+    @Autowired
+    private lateinit var userService: UserService
 
     @GetMapping("/{id}")
     fun getUser(@PathVariable id: Long): ResponseEntity<UserDto> {

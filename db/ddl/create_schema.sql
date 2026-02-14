@@ -236,3 +236,24 @@ INSERT INTO events (organizer_id, venue_id, title, category_id, start_time, end_
   (12, 100, 'Mass Concert', 1, '2026-03-01 19:00:00', '2026-03-01 22:00:00', 'PUBLISHED'),
   (12, 101, 'Town Play', 2, '2026-04-05 18:00:00', '2026-04-05 20:30:00', 'PUBLISHED');
 
+-- Sample sections and seats for the sample events
+-- Use subqueries to associate sections/seats with the inserted events by title
+INSERT INTO event_sections (event_id, name, capacity, notes, layout_json) VALUES
+  ((SELECT id FROM events WHERE title='Mass Concert' LIMIT 1), 'Front', 200, 'Front standing/closest to stage', NULL),
+  ((SELECT id FROM events WHERE title='Mass Concert' LIMIT 1), 'Balcony', 300, 'Upper balcony seating', NULL),
+  ((SELECT id FROM events WHERE title='Town Play' LIMIT 1), 'Main', 400, 'Main seating area', NULL);
+
+-- Insert seats for Mass Concert - Front section
+INSERT INTO seats (event_id, section_id, seat_row, seat_number, seat_code, status, price_paisa) VALUES
+  ((SELECT id FROM events WHERE title='Mass Concert' LIMIT 1), (SELECT id FROM event_sections WHERE event_id=(SELECT id FROM events WHERE title='Mass Concert' LIMIT 1) AND name='Front' LIMIT 1), 'A', '1', 'MC-F-A1', 'AVAILABLE', 150000),
+  ((SELECT id FROM events WHERE title='Mass Concert' LIMIT 1), (SELECT id FROM event_sections WHERE event_id=(SELECT id FROM events WHERE title='Mass Concert' LIMIT 1) AND name='Front' LIMIT 1), 'A', '2', 'MC-F-A2', 'AVAILABLE', 150000),
+  ((SELECT id FROM events WHERE title='Mass Concert' LIMIT 1), (SELECT id FROM event_sections WHERE event_id=(SELECT id FROM events WHERE title='Mass Concert' LIMIT 1) AND name='Front' LIMIT 1), 'A', '3', 'MC-F-A3', 'BOOKED', 150000),
+  ((SELECT id FROM events WHERE title='Mass Concert' LIMIT 1), (SELECT id FROM event_sections WHERE event_id=(SELECT id FROM events WHERE title='Mass Concert' LIMIT 1) AND name='Balcony' LIMIT 1), 'B', '1', 'MC-B-B1', 'AVAILABLE', 80000),
+  ((SELECT id FROM events WHERE title='Mass Concert' LIMIT 1), (SELECT id FROM event_sections WHERE event_id=(SELECT id FROM events WHERE title='Mass Concert' LIMIT 1) AND name='Balcony' LIMIT 1), 'B', '2', 'MC-B-B2', 'AVAILABLE', 80000);
+
+-- Insert seats for Town Play - Main section
+INSERT INTO seats (event_id, section_id, seat_row, seat_number, seat_code, status, price_paisa) VALUES
+  ((SELECT id FROM events WHERE title='Town Play' LIMIT 1), (SELECT id FROM event_sections WHERE event_id=(SELECT id FROM events WHERE title='Town Play' LIMIT 1) AND name='Main' LIMIT 1), 'R', '1', 'TP-M-R1', 'AVAILABLE', 50000),
+  ((SELECT id FROM events WHERE title='Town Play' LIMIT 1), (SELECT id FROM event_sections WHERE event_id=(SELECT id FROM events WHERE title='Town Play' LIMIT 1) AND name='Main' LIMIT 1), 'R', '2', 'TP-M-R2', 'BOOKED', 50000),
+  ((SELECT id FROM events WHERE title='Town Play' LIMIT 1), (SELECT id FROM event_sections WHERE event_id=(SELECT id FROM events WHERE title='Town Play' LIMIT 1) AND name='Main' LIMIT 1), 'R', '3', 'TP-M-R3', 'AVAILABLE', 50000);
+
